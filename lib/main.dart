@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:siba_weather/firebase_options.dart';
 import 'package:siba_weather/screens/signIn.dart';
+import 'package:siba_weather/screens/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,9 +20,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           // Your theme configuration goes here
           ),
-      initialRoute: '/signin',
+      initialRoute: '/home',
       routes: {
         '/signin': (context) => const SignInScreen(),
+        '/home': (context) => const HomeScreen(),
         // Add more routes here if needed
       },
     );

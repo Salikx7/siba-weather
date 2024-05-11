@@ -63,7 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '898331065553',
     projectId: 'siba-5347f',
     storageBucket: 'siba-5347f.appspot.com',
+    androidClientId: '898331065553-59agsiestriosikgnvf1vubvh734qdvf.apps.googleusercontent.com',
     iosClientId: '898331065553-t13e3vfoc248865fu49foc9mbjrailkm.apps.googleusercontent.com',
     iosBundleId: 'com.example.sibaWeather',
   );
+
 }

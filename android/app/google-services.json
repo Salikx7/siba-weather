@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "898331065553-59agsiestriosikgnvf1vubvh734qdvf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.siba_weather",
+            "certificate_hash": "7b3c9f9ed5d2d245b4bef7229ca50acbbb6594a3"
+          }
+        },
+        {
           "client_id": "898331065553-k73pdlqpucj98ccc1b44dmgnj01ujg7m.apps.googleusercontent.com",
           "client_type": 3
         }
