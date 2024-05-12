@@ -8,3 +8,14 @@ Image logoWidget(String imagePath) {
 Widget userInfo() {
   return SizedBox();
 }
+
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
