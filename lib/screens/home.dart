@@ -2,18 +2,16 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:siba_weather/screens/signIn.dart';
 import 'package:siba_weather/utils/consts.dart';
 import 'package:weather/weather.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:siba_weather/utils/string_extensions.dart';
-import 'package:appbar_dropdown/appbar_dropdown.dart'; // Import the appbar_dropdown package
+// Import the appbar_dropdown package
 
 class HomeScreen extends StatefulWidget {
   final String firstName; // Add this line to accept the first name
 
-  const HomeScreen({Key? key, required this.firstName}) : super(key: key);
+  const HomeScreen({super.key, required this.firstName});
 
   @override
   State<HomeScreen> createState() => _homeScreenState();
@@ -36,26 +34,14 @@ class _homeScreenState extends State<HomeScreen> {
   void fetchWeather(String cityName) async {
     try {
       Weather? fetchedWeather = await wf.currentWeatherByCityName(cityName);
-      if (fetchedWeather == null) {
-        if (mounted) {
-          // Check if the widget is still mounted
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Invalid location'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      } else {
-        setState(() {
-          weather = fetchedWeather;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        weather = fetchedWeather;
+      });
+        } catch (e) {
       if (mounted) {
         // Check if the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('An error occurred'),
             duration: Duration(seconds: 2),
           ),
@@ -65,7 +51,7 @@ class _homeScreenState extends State<HomeScreen> {
   }
 
   void startTimer() {
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    Timer.periodic(const Duration(minutes: 1), (timer) {
       fetchWeather(
           _cityController.text.isEmpty ? "Sukkur" : _cityController.text);
     });
@@ -117,7 +103,7 @@ class _homeScreenState extends State<HomeScreen> {
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.8,
                   height: MediaQuery.of(context).size.height * 0.07,
-                  padding: EdgeInsets.fromLTRB(10, 10, 9, 5),
+                  padding: const EdgeInsets.fromLTRB(10, 10, 9, 5),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.black, width: 0.1),
@@ -126,7 +112,7 @@ class _homeScreenState extends State<HomeScreen> {
                         color: Colors.black.withOpacity(0.17),
                         spreadRadius: 0,
                         blurRadius: 4,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       ),
                     ],
                     borderRadius: BorderRadius.circular(3),
@@ -137,7 +123,7 @@ class _homeScreenState extends State<HomeScreen> {
                       hintText: 'Search for any location',
                       border: InputBorder.none,
                       suffixIcon: IconButton(
-                        icon: Icon(Icons.search),
+                        icon: const Icon(Icons.search),
                         onPressed: () {
                           fetchWeather(_cityController.text);
                         },
@@ -147,17 +133,17 @@ class _homeScreenState extends State<HomeScreen> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.more_vert), // This icon can be customized
+                icon: const Icon(Icons.more_vert), // This icon can be customized
                 onPressed: () {
                   showMenu(
                     context: context,
-                    position: RelativeRect.fromLTRB(
+                    position: const RelativeRect.fromLTRB(
                         100, 130, 0, 0), // Adjust as needed
                     items: <PopupMenuEntry>[
                       PopupMenuItem<String>(
                         value: 'Sign Out',
                         child: ListTile(
-                          title: Text('Sign Out'),
+                          title: const Text('Sign Out'),
                           onTap: signOut,
                         ),
                       ),
@@ -291,7 +277,7 @@ class _homeScreenState extends State<HomeScreen> {
         height: MediaQuery.sizeOf(context).height * 0.15,
         width: MediaQuery.sizeOf(context).width * 0.8,
         decoration: BoxDecoration(
-          color: Color(0xFFD6CCFF),
+          color: const Color(0xFFD6CCFF),
           borderRadius: BorderRadius.circular(
             20,
           ),

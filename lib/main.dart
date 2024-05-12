@@ -8,10 +8,12 @@ import 'package:siba_weather/screens/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -24,36 +26,36 @@ class MyApp extends StatelessWidget {
               home: HomeScreen(firstName: 'Agha'),
               title: 'Hi_Weather',
               theme: ThemeData(
-                scaffoldBackgroundColor: Color(0xFFF4FFCD),
+                scaffoldBackgroundColor: const Color(0xFFF4FFCD),
               ),
               initialRoute: '/home',
               routes: {
-                '/signin': (context) => SignInScreen(),
-                '/home': (context) => HomeScreen(firstName: 'Agha'),
+                '/signin': (context) => const SignInScreen(),
+                '/home': (context) => const HomeScreen(firstName: 'Agha'),
               },
             );
           } else {
             // User is not signed in
             return MaterialApp(
-              home: SignInScreen(),
+              home: const SignInScreen(),
               title: 'Hi_Weather',
               theme: ThemeData(
-                scaffoldBackgroundColor: Color(0xFFF4FFCD),
+                scaffoldBackgroundColor: const Color(0xFFF4FFCD),
               ),
               initialRoute: '/signin',
               routes: {
-                '/signin': (context) => SignInScreen(),
-                '/home': (context) => HomeScreen(firstName: 'Agha'),
+                '/signin': (context) => const SignInScreen(),
+                '/home': (context) => const HomeScreen(firstName: 'Agha'),
               },
             );
           }
         } else {
           // Waiting for authentication state to be determined
           return MaterialApp(
-            home: SplashScreen(),
+            home: const SplashScreen(),
             title: 'Hi_Weather',
             theme: ThemeData(
-              scaffoldBackgroundColor: Color(0xFFF4FFCD),
+              scaffoldBackgroundColor: const Color(0xFFF4FFCD),
             ),
           );
         }
