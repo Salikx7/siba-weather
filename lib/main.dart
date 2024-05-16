@@ -22,8 +22,14 @@ class MyApp extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.hasData) {
             // User is signed in
+            String userName = snapshot.data!.displayName ?? '';
+            final List<String> displayNameParts = userName.split(' ');
+            final String firstName =
+                displayNameParts.isNotEmpty ? displayNameParts[0] : '';
             return MaterialApp(
-              home: HomeScreen(firstName: 'Agha'),
+              home: HomeScreen(
+                userName: firstName,
+              ),
               title: 'Hi_Weather',
               theme: ThemeData(
                 scaffoldBackgroundColor: const Color(0xFFF4FFCD),
@@ -31,12 +37,13 @@ class MyApp extends StatelessWidget {
               initialRoute: '/home',
               routes: {
                 '/signin': (context) => const SignInScreen(),
-                '/home': (context) => const HomeScreen(firstName: 'Agha'),
+                '/home': (context) => HomeScreen(userName: firstName),
               },
             );
           } else {
             // User is not signed in
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               home: const SignInScreen(),
               title: 'Hi_Weather',
               theme: ThemeData(
@@ -45,13 +52,16 @@ class MyApp extends StatelessWidget {
               initialRoute: '/signin',
               routes: {
                 '/signin': (context) => const SignInScreen(),
-                '/home': (context) => const HomeScreen(firstName: 'Agha'),
+                '/home': (context) => const HomeScreen(
+                      userName: '',
+                    ),
               },
             );
           }
         } else {
           // Waiting for authentication state to be determined
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             home: const SplashScreen(),
             title: 'Hi_Weather',
             theme: ThemeData(

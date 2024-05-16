@@ -1,6 +1,13 @@
 <manifest 
     xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="1:898331065553:android:d8d3497dde432577ee19f0"/>
     <application
         android:label="Siba Weather"
         android:name="${applicationName}"

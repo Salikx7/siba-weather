@@ -1,17 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:siba_weather/utils/consts.dart';
 import 'package:weather/weather.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:siba_weather/utils/string_extensions.dart';
-// Import the appbar_dropdown package
 
 class HomeScreen extends StatefulWidget {
-  final String firstName; // Add this line to accept the first name
+  final String userName;
 
-  const HomeScreen({super.key, required this.firstName});
+  const HomeScreen({Key? key, required this.userName}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _homeScreenState();
@@ -27,7 +31,11 @@ class _homeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeather("Sukkur");
+
+    getCurrentCity().then((currCity) {
+      fetchWeather(currCity);
+    });
+
     startTimer();
   }
 
@@ -37,7 +45,7 @@ class _homeScreenState extends State<HomeScreen> {
       setState(() {
         weather = fetchedWeather;
       });
-        } catch (e) {
+    } catch (e) {
       if (mounted) {
         // Check if the widget is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,16 +58,25 @@ class _homeScreenState extends State<HomeScreen> {
     }
   }
 
+  Timer? _timer;
   void startTimer() {
-    Timer.periodic(const Duration(minutes: 1), (timer) {
-      fetchWeather(
-          _cityController.text.isEmpty ? "Sukkur" : _cityController.text);
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      getCurrentCity().then((currCity) {
+        fetchWeather(currCity);
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: buildUI(),
       ),
@@ -90,6 +107,24 @@ class _homeScreenState extends State<HomeScreen> {
       greeting = "Good Afternoon";
     } else {
       greeting = "Good Evening";
+    }
+
+    String firstName = "";
+// Check if currentUser is not null
+    if (_auth.currentUser != null) {
+      // Check if displayName is not null
+      if (_auth.currentUser?.displayName != null) {
+        final List<String> displayNameParts =
+            _auth.currentUser!.displayName!.split(' ');
+        firstName = displayNameParts.isNotEmpty ? displayNameParts[0] : '';
+        // Continue with your logic using firstName
+      } else {
+        // Handle the case where displayName is null
+        print("DisplayName is null.");
+      }
+    } else {
+      // Handle the case where currentUser is null
+      print("Current user is null.");
     }
 
     return Column(
@@ -133,7 +168,8 @@ class _homeScreenState extends State<HomeScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.more_vert), // This icon can be customized
+                icon:
+                    const Icon(Icons.more_vert), // This icon can be customized
                 onPressed: () {
                   showMenu(
                     context: context,
@@ -168,7 +204,7 @@ class _homeScreenState extends State<HomeScreen> {
                       SizedBox(
                           height: MediaQuery.of(context).size.height * 0.02),
                       Text(
-                        "$greeting, ${widget.firstName}!",
+                        "$greeting, ${widget.userName}!",
                         style: GoogleFonts.quicksand(
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
@@ -198,8 +234,9 @@ class _homeScreenState extends State<HomeScreen> {
   }
 
   Widget locationheader() {
+    final String nalo = "${weather?.areaName ?? ""}, ${weather?.country ?? ""}";
     return Text(
-      weather?.areaName ?? "",
+      nalo,
       style: GoogleFonts.quicksand(
         fontSize: 47,
         fontWeight: FontWeight.w300,
@@ -239,19 +276,23 @@ class _homeScreenState extends State<HomeScreen> {
   }
 
   Widget weatherIcon() {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          height: MediaQuery.sizeOf(context).height * 0.2,
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: NetworkImage(
-                      "http://openweathermap.org/img/wn/${weather?.weatherIcon}@4x.png"))),
-        ),
-      ],
+    return FutureBuilder<String>(
+      future: getWeatherAnimation(
+          weather?.weatherMain), // Pass the Future to FutureBuilder
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show a loading indicator while waiting for the future to complete
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          // Handle error case
+          return Text('Error: ${snapshot.error}');
+        } else {
+          // Once the future completes, use the result to display the Lottie asset
+          return Lottie.asset(snapshot.data!,
+              height: MediaQuery.of(context).size.height *
+                  0.2); // Use snapshot.data to access the result
+        }
+      },
     );
   }
 
@@ -270,6 +311,87 @@ class _homeScreenState extends State<HomeScreen> {
         ),
       ],
     );
+  }
+
+  Future<String> getWeatherAnimation(String? mainCondition) async {
+    double latitude = weather?.latitude ?? 0;
+    double longitude = weather?.longitude ?? 0;
+
+    final String url =
+        'http://api.openweathermap.org/data/2.5/sunrise-sunset?lat=$latitude&lon=$longitude&appid=$OpenWeather_API_KEY';
+
+    final http.Response response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      DateTime sunrise =
+          DateTime.fromMillisecondsSinceEpoch(jsonResponse['sunrise'] * 1000);
+      DateTime sunset =
+          DateTime.fromMillisecondsSinceEpoch(jsonResponse['sunset'] * 1000);
+
+      DateTime currentTime = DateTime.now();
+
+      // Determine if it's currently day or night based on sunrise and sunset times
+      bool isDaytime =
+          currentTime.isAfter(sunrise) && currentTime.isBefore(sunset);
+
+      if (isDaytime) {
+        // Daytime logic
+        if (mainCondition == null)
+          return 'lib/assets/weatherAnims/dayClear.json';
+
+        switch (mainCondition.toLowerCase()) {
+          case 'clouds':
+            return 'lib/assets/weatherAnims/dayScatteredClouds.json';
+          case 'few clouds':
+            return 'lib/assets/weatherAnims/dayFewClouds.json';
+          case 'mist':
+          case 'fog':
+          case 'haze':
+          case 'smoke':
+          case 'dust':
+            return 'lib/assets/weatherAnims/dayMist.json';
+          case 'rain':
+            return 'lib/assets/weatherAnims/dayRain.json';
+          case 'drizzle':
+            return 'lib/assets/weatherAnims/dayShowers.json';
+          case 'thunderstorm':
+            return 'lib/assets/weatherAnims/dayThunderstorm.json';
+          case 'snow':
+            return 'lib/assets/weatherAnims/daySnow.json';
+          case 'clear':
+            return 'lib/assets/weatherAnims/dayClear.json';
+        }
+      }
+    } else {
+      // Nighttime logic
+      if (mainCondition == null)
+        return 'lib/assets/weatherAnims/nightClear.json';
+
+      switch (mainCondition.toLowerCase()) {
+        // Your nighttime conditions here
+        case 'clouds':
+          return 'lib/assets/weatherAnims/nightScatteredClouds.json';
+        case 'few clouds':
+          return 'lib/assets/weatherAnims/nightFewClouds.json';
+        case 'mist':
+        case 'fog':
+        case 'haze':
+        case 'smoke':
+        case 'dust':
+          return 'lib/assets/weatherAnims/nightMist.json';
+        case 'rain':
+          return 'lib/assets/weatherAnims/nightRain.json';
+        case 'drizzle':
+          return 'lib/assets/weatherAnims/nightShowers.json';
+        case 'thunderstorm':
+          return 'lib/assets/weatherAnims/nightThunderstorm.json';
+        case 'snow':
+          return 'lib/assets/weatherAnims/nightSnow.json';
+        case 'clear':
+          return 'lib/assets/weatherAnims/nightClear.json';
+      }
+    }
+    throw 'No animation found for weather condition: $mainCondition';
   }
 
   Widget extraInfo() {
@@ -325,5 +447,20 @@ class _homeScreenState extends State<HomeScreen> {
             )
           ],
         ));
+  }
+
+  Future<String> getCurrentCity() async {
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    String? cityName = placemarks[0].locality;
+    return cityName ?? "";
   }
 }

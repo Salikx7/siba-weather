@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:siba_weather/reusable_widgets/reusable_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,18 +19,25 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
-
   User? user;
   String? firstName;
+  StreamSubscription<User?>? _authStateChangesSubscription;
 
   @override
   void initState() {
     super.initState();
-    firebaseAuth.authStateChanges().listen((event) {
+    _authStateChangesSubscription =
+        firebaseAuth.authStateChanges().listen((event) {
       setState(() {
         user = event;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _authStateChangesSubscription?.cancel(); // Cancel the listener
+    super.dispose();
   }
 
   Future<void> HandleGoogleSignIn() async {
@@ -61,7 +70,8 @@ class _SignInScreenState extends State<SignInScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => HomeScreen(
-                  firstName: firstName!), // Pass the first name to HomeScreen
+                  userName:
+                      firstName ?? ''), // Pass the first name to HomeScreen
             ));
       }
     } catch (e) {
@@ -75,7 +85,10 @@ class _SignInScreenState extends State<SignInScreen> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              70, MediaQuery.of(context).size.height * 0.2, 70, 0),
+              MediaQuery.of(context).size.height * 0.08,
+              MediaQuery.of(context).size.height * 0.2,
+              MediaQuery.of(context).size.height * 0.08,
+              0),
           child: Column(
             children: <Widget>[
               logoWidget("lib/assets/images/logo.png"),
