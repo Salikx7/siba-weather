@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:siba_weather/reusable_widgets/reusable_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -92,6 +91,7 @@ class _SignInScreenState extends State<SignInScreen> {
           child: Column(
             children: <Widget>[
               logoWidget("lib/assets/images/logo.png"),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
               Text(
                 "SIBA Weather",
                 style: GoogleFonts.zenDots(
@@ -123,5 +123,12 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       ),
     );
+  }
+
+  Image logoWidget(String imagePath) {
+    return Image.asset(imagePath,
+        fit: BoxFit.fitWidth,
+        width: MediaQuery.of(context).size.width * 0.48,
+        height: MediaQuery.of(context).size.height * 0.25);
   }
 }

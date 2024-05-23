@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
             final String firstName =
                 displayNameParts.isNotEmpty ? displayNameParts[0] : '';
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               home: HomeScreen(
                 userName: firstName,
               ),
